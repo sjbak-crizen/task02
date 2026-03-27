@@ -4,6 +4,8 @@
        xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd">
+<!--[자세한 설명]: 이 문서가 스프링의 뼈대 설정 파일(Root Context)임을 알리고, 여기서 사용할 <bean> 태그나 <mybatis-spring:scan> 태그의 문법 사전을 어디서 가져올지 명시하는 부분입니다.
+    [변경/삭제 시]: 태그의 네임스페이스(xmlns)를 지우거나 오타가 나면, 스프링이 아래에 작성된 설정 태그들을 인식하지 못해 서버 구동 시 치명적인 파싱 에러(SAXParseException)가 발생합니다.-->
 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.mariadb.jdbc.Driver"/>
@@ -11,17 +13,28 @@
         <property name="username" value="root"/>
         <property name="password" value="1234"/>
     </bean>
+<!--[자세한 설명]: Java가 MariaDB와 통신하기 위한 접속 정보(IP, 포트, DB명, 계정, 비밀번호)를 담은 커넥션 객체를 만드는 곳입니다.
+    [변경 시]: password를 "0000" 등 틀린 비밀번호로 바꾸면 Access denied for user 에러가 납니다. url의 포트 번호(3306)가 틀리면 DB를 아예 찾지 못해 Communications link failure 에러가 뜹니다.
+    [삭제 시]: DB와 연결고리가 사라집니다. 바로 아래에 있는 sqlSessionFactory가 이 dataSource를 필요로 하기 때문에 연쇄적으로 에러가 발생하며 서버가 죽습니다.-->
 
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="mapperLocations" value="classpath:/mappers/**/*Mapper.xml"/>
     </bean>
-
     <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg ref="sqlSessionFactory"/>
     </bean>
+    <mybatis-spring:scan base-package="com.crizen.task02.mapper"/>
+<!--[자세한 설명]:
+    sqlSessionFactory: 앞서 만든 dataSource와 우리가 작성한 쿼리문 파일들(mapperLocations)을 하나로 묶어주는 **'쿼리 실행 공장'**입니다.
+    sqlSession: 공장에서 만들어진 객체를 안전하게 실행하고 관리하는 관리자입니다.
+    mybatis-spring:scan: 지정한 패키지를 샅샅이 뒤져서 MyBatis 인터페이스들을 자동으로 찾아 연결해 줍니다.
+    [변경 시]: mapperLocations의 경로(classpath:/mappers/...)를 오타 내면 XML 쿼리문을 찾지 못해서, 나중에 게시판을 눌렀을 때 Invalid bound statement (not found) 에러가 터집니다.
+    [삭제 시]: Java 객체와 SQL 쿼리가 연결되지 않아, DB에서 데이터를 읽거나 쓰는 모든 기능(게시판 전체)이 마비됩니다.-->
 
     <bean id="counselBatchService" class="com.crizen.task02.scheduler.CounselBatchService" />
+<!--[자세한 설명]: 일괄처리 로직을 작성해 둔 Java 클래스(CounselBatchService)를 스프링 메모리에 '빈(Bean)'으로 등록합니다. 스케줄러가 이 객체를 가져다 쓰기 위함입니다.
+    [삭제 시]: 바로 아래의 Job 설정에서 targetObject로 이 녀석을 찾을 수 없게 되어 NoSuchBeanDefinitionException 에러가 납니다.-->
 
     <bean id="maskingJob" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
         <property name="targetObject" ref="counselBatchService" />
@@ -33,16 +46,25 @@
         <property name="targetMethod" value="processDeleteOld" />
         <property name="concurrent" value="false" />
     </bean>
+<!--[자세한 설명]: "어떤 클래스의 어떤 메서드를 실행할 것인가?"를 정의하는 작업 명세서(Job)입니다. targetMethod에 각각 마스킹 기능과 삭제 기능 메서드 이름을 매핑했습니다.
+    [변경 시]: concurrent 속성을 true로 바꾸거나 지우면, 앞선 마스킹 작업이 미처 다 끝나지도 않았는데 다음 스케줄 주기가 왔을 때 똑같은 작업이 또 실행되는 '동시 실행(중첩)' 문제가 생겨 DB 락(Lock)이 걸릴 수 있습니다. (false로 두어야 앞 작업이 끝날 때까지 대기합니다.)
+    [삭제 시]: 트리거(Trigger)가 실행할 작업 목표를 잃어버려 스케줄러 설정 에러가 발생합니다.-->
 
-    <bean id="maskingTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+    <bean id="maskingTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
         <property name="jobDetail" ref="maskingJob" />
-        <property name="cronExpression" value="0 0/3 * * * ?" />
+        <property name="startDelay" value="180000" />
+        <property name="repeatInterval" value="180000" />
     </bean>
 
     <bean id="deleteOldTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="deleteOldJob" />
         <property name="cronExpression" value="0 0 8 * * ?" />
     </bean>
+<!--[자세한 설명]: 작업을 언제 실행할지 정하는 설정입니다.
+    SimpleTrigger: 단순하게 반복할 때 씁니다. 서버가 켜진 후 3분(startDelay) 대기했다가, 3분(repeatInterval)마다 반복 실행합니다.
+    CronTrigger: 복잡한 시간을 정할 때 씁니다. 매일 아침 8시 정각(0 0 8 * * ?)에 한 번만 실행되도록 Cron 표현식을 썼습니다.
+    [변경 시]: repeatInterval을 60000으로 바꾸면 1분마다 동작하게 됩니다. cronExpression을 0 30 14 * * ? 로 바꾸면 오후 2시 30분에 동작합니다.
+    [삭제 시]: 특정 기능(예: 삭제 배치)의 알람이 사라져서, 그 작업은 영원히 자동으로 실행되지 않습니다. (서버는 정상 구동됩니다.)-->
 
     <bean id="schedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
@@ -52,7 +74,6 @@
             </list>
         </property>
     </bean>
-
-    <mybatis-spring:scan base-package="com.crizen.task02"/>
-
+<!--[자세한 설명]: 앞서 만들어둔 모든 알람시계(Trigger)들을 리스트에 담아서 최종적으로 구동시키는 스케줄러의 메인 심장입니다.
+    [변경/삭제 시]: 여기서 <ref bean="deleteOldTrigger" /> 한 줄을 빼먹고 등록하지 않으면, 위에 기껏 트리거를 세팅해 뒀더라도 알람이 활성화되지 않아 삭제 작업이 동작하지 않습니다. 이 schedulerFactoryBean 덩어리 자체를 지워버리면 Quartz 스케줄러 자체가 아예 켜지지 않습니다.-->
 </beans>

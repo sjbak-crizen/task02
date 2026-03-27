@@ -4,36 +4,19 @@ import com.crizen.task02.vo.CounselVO;
 import com.crizen.task02.vo.CounselCommentVO;
 import java.util.List;
 
+// MyBatis 매퍼 인터페이스: 여기 적힌 메서드 이름(id)과 CounselMapper.xml 안의 id가 일치해야 쿼리가 작동합니다.
 public interface CounselMapper {
-
-    // 1. 게시글 목록 조회 (getCounselList)
-    List<CounselVO> getCounselList();
-
-    // 2. 게시글 상세 조회 (getCounsel)
-    CounselVO getCounsel(int seq_counsel);
-
-    // 3. 게시글 등록 (insertCounsel)
-    // 데이터베이스에 저장할 제목, 내용, 작성자 정보가 담긴 CounselVO 객체를 통째로 넘겨줍니다.
-    void insertCounsel(CounselVO vo);
-
-    // 4. 게시글 수정 (updateCounsel)
-    // 수정할 번호와 변경된 제목, 내용이 담긴 CounselVO 객체를 넘겨줍니다.
+    // 기본 CRUD 및 댓글
+    List<CounselVO> getCounselList(); // 결과물이 여러 줄이므로 List<VO> 형태로 받습니다.
+    CounselVO getCounsel(int seq_counsel); // 특정 글 번호 1건만 조회하므로 VO 단일 객체로 받습니다.
+    void insertCounsel(CounselVO vo); // 등록 시에는 VO 통째로 넘겨줍니다. 리턴값(void)은 성공 여부(int)로 바꿀 수도 있습니다.
     void updateCounsel(CounselVO vo);
+    void deleteCounsel(int seq_counsel); // 삭제는 번호(PK)만 알면 되므로 int 값만 넘깁니다.
 
-    // 5. 게시글 삭제 (deleteCounsel)
-    // 삭제할 게시글 번호(int)만 넘겨줍니다.
-    void deleteCounsel(int seq_counsel);
-
-    // 6. 특정 게시글의 댓글 목록 조회 (getCommentList)
-    List<CounselCommentVO> getCommentList(int seq_counsel);
-
-    // 7. 댓글 등록 (insertComment)
-    // 부모 글 번호, 댓글 내용, 작성자 정보가 담긴 CounselCommentVO 객체를 넘겨줍니다.
+    List<CounselCommentVO> getCommentList(int seq_counsel); // 특정 부모 글의 모든 댓글을 가져오므로 List 형태입니다.
     void insertComment(CounselCommentVO vo);
 
-    // 8. 욕설 마스킹 일괄 처리
-    void maskSwearWords();
-
-    // 9. 5일 지난 게시글 삭제 일괄 처리
-    void deleteOldCounsels();
+    // Quartz 일괄처리용 메서드
+    void maskSwearWords();    // 욕설 마스킹 실행 (파라미터 없이 쿼리만 실행)
+    void deleteOldCounsels(); // 5일 경과 데이터 삭제 실행 (파라미터 없이 쿼리만 실행)
 }

@@ -6,16 +6,30 @@
              xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
        http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+<!--[자세한 설명]: 이 파일에서 스프링의 다양한 기능(태그)들을 가져다 쓰겠다고 미리 선언하는 부분입니다. (import 같은 역할)
+    [삭제 시]: 아래에 나오는 <annotation-driven/> 같은 태그들을 컴퓨터가 읽지 못해 서버 자체가 켜지지 않고 에러가 발생합니다.-->
 
     <annotation-driven/>
+<!--[자세한 설명]: Java 코드에 쓴 @Controller, @RequestMapping 같은 스프링 명령어들을 작동하게 켜주는 메인 스위치입니다.
+    [삭제 시]: URL 주소 연결 기능이 죽어버려서, 어떤 주소로 들어가도 404 Not Found 에러가 뜹니다.-->
 
     <resources mapping="/resources/**" location="/resources/"/>
+<!--[자세한 설명]: 부트스트랩 CSS나 이미지 파일들이 스프링의 복잡한 검사를 거치지 않고 화면에 바로 뜰 수 있게하는 설정입니다.
+    [삭제 시]: 부트스트랩 CSS 파일이 막혀서, 게시판의 디자인이 다 깨지고 흑백 텍스트만 남게 됩니다.-->
 
     <beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <beans:property name="prefix" value="/WEB-INF/views/"/>
         <beans:property name="suffix" value=".jsp"/>
     </beans:bean>
+<!--[자세한 설명]: Java 컨트롤러에서 return "counsel/list"라고만 짧게 적어도, 앞에는 /WEB-INF/views/를 붙이고 뒤에는 .jsp를 붙여서 진짜 파일 위치를 완성해 줍니다.
+    [삭제 시]: 스프링이 JSP 파일의 위치를 찾을 수 없어 에러 발생합니다.-->
 
     <context:component-scan base-package="com.crizen.task02"/>
+<!--[자세한 설명]: com.crizen.task02 폴더(패키지) 전체를 샅샅이 뒤져서 @Controller가 붙은 Java 파일들을 찾아내 메모리에 자동으로 올려주는 역할입니다.
+    [삭제 시]: 컨트롤러 자체가 작동을 안 하므로 게시판 접속 기능이 완전히 마비됩니다.-->
+
     <view-controller path="/" view-name="redirect:/counsel/list" />
+<!--[자세한 설명]: Java 코드에 메인 페이지 컨트롤러를 안 짜도, 사용자가 주소창에 기본 주소(/)만 치고 들어오면 자동으로 게시판 목록 화면(/counsel/list)으로 보내버리는 지름길 설정입니다.
+    [삭제 시]: WAS인 톰캣이 기본 설정에 따라 프로젝트 최상단에 있는 index.jsp나 index.html을 찾아 화면에 띄워주게 됩니다. (만약 해당 파일들이 없다면 404 Not Found 에러가 발생합니다.)-->
+
 </beans:beans>
