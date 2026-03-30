@@ -16,6 +16,18 @@
         <a href="write" class="btn btn-primary">글쓰기</a>
 <%--        btn-primary: 파란색 메인 버튼--%>
     </div>
+
+    <form action="list" method="get" class="d-flex mb-3 bg-light p-3 border rounded align-items-center">
+        <select name="searchType" class="form-control mr-2" style="width: auto;">
+            <option value="writer">작성자</option>
+            <option value="date">작성일시 (예: 2024-03-30)</option>
+            <option value="title">제목</option>
+            <option value="title_content">제목+내용</option>
+        </select>
+        <input type="text" name="searchKeyword" class="form-control mr-2 flex-grow-1" placeholder="검색어를 입력하세요">
+        <button type="submit" class="btn btn-dark" style="white-space: nowrap;">검색</button>
+    </form>
+
     <table class="table table-bordered table-hover">
         <thead class="thead-light">
         <tr>

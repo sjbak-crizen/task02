@@ -8,6 +8,10 @@ public class CounselVO {
     private String counsel_content;
     private String counsel_writer;
     private Date counsel_date;
+    private String modify_id;
+    private Date modify_date;
+    private String searchType;    // 검색 조건 (writer, date, title, title_content)
+    private String searchKeyword; // 사용자가 입력한 검색어
 
     public int getSeq_counsel() {
         return seq_counsel;
@@ -47,5 +51,37 @@ public class CounselVO {
 
     public void setCounsel_date(Date counsel_date) {
         this.counsel_date = counsel_date;
+    }
+
+    public String getModify_id() {
+        return modify_id;
+    }
+
+    public void setModify_id(String modify_id) {
+        this.modify_id = modify_id;
+    }
+
+    public Date getModify_date() {
+        return modify_date;
+    }
+
+    public void setModify_date(Date modify_date) {
+        this.modify_date = modify_date;
+    }
+
+    public String getSearchType() {
+        return searchType;
+    }
+
+    public void setSearchType(String searchType) {
+        this.searchType = searchType;
+    }
+
+    public String getSearchKeyword() {
+        return searchKeyword;
+    }
+
+    public void setSearchKeyword(String searchKeyword) {
+        this.searchKeyword = searchKeyword;
     }
 }

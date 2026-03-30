@@ -3,12 +3,26 @@
 
 <mapper namespace="com.crizen.task02.mapper.CounselMapper">
 
-    <select id="getCounselList" resultType="com.crizen.task02.vo.CounselVO">
-        <!-- COUNSEL_INFO 테이블의 모든 컬럼을 조회합니다.
-          ORDER BY counsel_date DESC: 작성일(counsel_date)을 기준으로 내림차순(DESC) 정렬합니다. (최신 글이 맨 위로)
-          [변경 시] DESC를 ASC로 바꾸면 가장 오래된 옛날 글이 1페이지 1번으로 올라옵니다.
-        -->
-        SELECT * FROM COUNSEL_INFO ORDER BY counsel_date DESC
+    <select id="getCounselList" resultType="com.crizen.task02.vo.CounselVO" parameterType="com.crizen.task02.vo.CounselVO">
+        SELECT * FROM COUNSEL_INFO
+        <where>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                <if test="searchType == 'writer'">
+                    AND counsel_writer LIKE CONCAT('%', #{searchKeyword}, '%')
+                </if>
+                <if test="searchType == 'date'">
+                    AND DATE_FORMAT(counsel_date, '%Y-%m-%d') = #{searchKeyword}
+                </if>
+                <if test="searchType == 'title'">
+                    AND counsel_title LIKE CONCAT('%', #{searchKeyword}, '%')
+                </if>
+                <if test="searchType == 'title_content'">
+                    AND (counsel_title LIKE CONCAT('%', #{searchKeyword}, '%')
+                    OR counsel_content LIKE CONCAT('%', #{searchKeyword}, '%'))
+                </if>
+            </if>
+        </where>
+        ORDER BY seq_counsel DESC
     </select>
 
     <select id="getCounsel" parameterType="int" resultType="com.crizen.task02.vo.CounselVO">
@@ -20,22 +34,18 @@
     </select>
 
     <insert id="insertCounsel" parameterType="com.crizen.task02.vo.CounselVO">
-        <selectKey keyProperty="seq_counsel" resultType="int" order="BEFORE">
-            <!-- MariaDB의 시퀀스에서 다음 번호를 뽑아옵니다. (Oracle의 시퀀스.NEXTVAL 과 동일한 역할) -->
-            SELECT NEXTVAL(seq_counsel)
-        </selectKey>
-        <!-- 위에서 뽑아서 셋팅해준 #{seq_counsel}을 포함하여 모든 데이터를 DB에 밀어 넣습니다. -->
-        INSERT INTO COUNSEL_INFO (seq_counsel, counsel_title, counsel_content, counsel_writer)
-        VALUES (#{seq_counsel}, #{counsel_title}, #{counsel_content}, #{counsel_writer})
+        INSERT INTO COUNSEL_INFO (counsel_title, counsel_writer, counsel_content, counsel_date)
+        VALUES (#{counsel_title}, #{counsel_writer}, #{counsel_content}, NOW())
     </insert>
+
+
 
     <update id="updateCounsel" parameterType="com.crizen.task02.vo.CounselVO">
         UPDATE COUNSEL_INFO
         SET counsel_title = #{counsel_title},
-            counsel_content = #{counsel_content}
-        <!-- WHERE 절이 매우 중요합니다! 특정 글 번호만 수정하도록 조건을 겁니다.
-          [삭제 시] WHERE 절을 실수로 지우면, 게시판에 있는 10만 개의 게시글 제목과 내용이 방금 수정한 글로 다 똑같이 바뀌는 대형 사고가 납니다!
-        -->
+            counsel_content = #{counsel_content},
+            modify_id = #{modify_id},
+            modify_date = NOW()
         WHERE seq_counsel = #{seq_counsel}
     </update>
 
