@@ -1,6 +1,7 @@
 package com.crizen.task02.controllers;
 
 // 필요한 객체(VO)와 인터페이스(Mapper), 스프링 어노테이션들을 불러옵니다.
+import com.crizen.task02.mapper.UserMapper;
 import com.crizen.task02.vo.CounselCommentVO;
 import com.crizen.task02.vo.CounselVO;
 import com.crizen.task02.mapper.CounselMapper;

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.crizen.task02.mapper.UserMapper">
+
+    <select id="getUserById" resultType="com.crizen.task02.vo.UserVO">
+        SELECT * FROM USER_INFO WHERE user_id = #{user_id}
+    </select>
+
+    <update id="updateFailCount">
+        UPDATE USER_INFO SET fail_cnt = fail_cnt + 1 WHERE user_id = #{user_id}
+    </update>
+
+    <update id="lockUser">
+        UPDATE USER_INFO SET is_locked = 'Y' WHERE user_id = #{user_id}
+    </update>
+
+    <update id="resetFailCount">
+        UPDATE USER_INFO SET fail_cnt = 0 WHERE user_id = #{user_id}
+    </update>
+
+    <insert id="insertUser" parameterType="com.crizen.task02.vo.UserVO">
+        INSERT INTO USER_INFO (user_id, password, user_name, role, allowed_ip)
+        VALUES (#{user_id}, #{password}, #{user_name}, #{role}, #{allowed_ip})
+    </insert>
+
+</mapper>

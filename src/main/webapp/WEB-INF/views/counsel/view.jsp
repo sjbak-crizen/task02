@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%--시큐리티 태그를 쓰겠다는 선언--%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -37,7 +39,8 @@
         <input type="hidden" name="seq_counsel" value="${counsel.seq_counsel}">
         <div class="form-row">
             <div class="col-md-2">
-                <input type="text" name="comment_writer" class="form-control" placeholder="작성자" required>
+                <input type="text" name="comment_writer" class="form-control"
+                       value="<sec:authentication property='principal.user_name'/>" readonly>
             </div>
             <div class="col-md-9">
                 <input type="text" name="comment_content" class="form-control" placeholder="댓글을 입력하세요" required>
@@ -47,6 +50,9 @@
             </div>
         </div>
     </form>
+<%--    사용자가 댓글 작성자 이름과 내용을 입력하고 '등록'을 누르는 영역입니다.
+    <form method="post">: 데이터가 주소창에 노출되지 않도록 안전한 POST 방식을 씁니다.
+    <input type="hidden">: 부모 글의 PK 번호를 몰래 숨겨서 같이 제출하는 코드입니다.--%>
 </div>
 </body>
 </html>

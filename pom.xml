@@ -96,5 +96,21 @@
     spring-context-support: Spring이 Quartz 같은 외부 라이브러리(또는 메일 발송 기능 등)를 쉽게 가져다 쓸 수 있도록 돕는 지원군입니다.
     [삭제 시]: quartz를 지우면 스케줄러 기능이 작동하지 않습니다. 특히 주의할 점은 spring-context-support를 지웠을 때입니다. 이걸 지우면 root-context.xml에 작성했던 <bean id="schedulerFactoryBean"...> 같은 Quartz 설정 태그들을 스프링이 전혀 읽지 못해 서버가 켜지지도 않게 됩니다.-->
 
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>3.2.10.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <version>3.2.10.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-taglibs</artifactId>
+            <version>3.2.10.RELEASE</version>
+        </dependency>
+
     </dependencies>
 </project>

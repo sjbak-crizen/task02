@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/security
+                           http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <security:http pattern="/resources/**" security="none" />
+
+    <security:http auto-config="true" use-expressions="true">
+
+        <security:intercept-url pattern="/login**" access="permitAll" />
+        <security:intercept-url pattern="/user/register**" access="permitAll" />
+        <security:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
+        <security:intercept-url pattern="/**" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')" />
+
+        <security:form-login
+                login-page="/login"
+                login-processing-url="/loginProcess"
+                username-parameter="user_id"
+                password-parameter="password"
+                authentication-success-handler-ref="customLoginSuccessHandler"
+                authentication-failure-handler-ref="customLoginFailureHandler" />
+
+        <security:logout
+                logout-url="/logout"
+                logout-success-url="/login?logout=true"
+                invalidate-session="true" />
+
+    </security:http>
+
+    <bean id="customAuthenticationProvider" class="com.crizen.task02.security.CustomAuthenticationProvider" />
+    <bean id="customLoginSuccessHandler" class="com.crizen.task02.security.CustomLoginSuccessHandler">
+        <property name="defaultTargetUrl" value="/counsel/list" />
+    </bean>
+    <bean id="customLoginFailureHandler" class="com.crizen.task02.security.CustomLoginFailureHandler" />
+
+    <bean id="bcryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+
+    <security:authentication-manager>
+        <security:authentication-provider ref="customAuthenticationProvider" />
+    </security:authentication-manager>
+
+</beans>
