@@ -1,5 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%-- [JSTL 선언]
+     JSP 파일 안에 복잡한 자바 코드(<% for(...) %>)를 쓰면 화면(View) 코드가 지저분해집니다.
+     이를 방지하고 HTML 태그처럼 깔끔하게 반복문/조건문을 사용하기 위해 JSTL(표준 태그 라이브러리)을 끌어온 것입니다. --%>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,6 +22,9 @@
     </div>
 
     <form action="list" method="get" class="d-flex mb-3 bg-light p-3 border rounded align-items-center">
+        <%-- [검색에 GET 방식을 쓴 이유]
+            검색은 DB의 데이터를 수정/삭제하는 것이 아니라 단순히 '조회'만 하는 행위이므로 GET 방식을 사용했습니다.
+            또한, GET 방식을 쓰면 검색어 조건이 URL에 남기 때문에 다른 사람에게 검색 결과를 링크로 공유하거나 즐겨찾기에 추가할 수 있다는 강력한 장점이 있습니다. --%>
         <select name="searchType" class="form-control mr-2" style="width: auto;">
             <option value="writer">작성자</option>
             <option value="date">작성일시 (예: 2024-03-30)</option>

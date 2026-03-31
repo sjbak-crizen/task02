@@ -27,13 +27,16 @@
 
     <select id="getCounsel" parameterType="int" resultType="com.crizen.task02.vo.CounselVO">
         <!-- #{seq_counsel}: Java에서 넘겨준 파라미터 값(글 번호)이 들어갈 자리입니다.
-          내부적으로 PreparedStatement를 사용하여 값에 포함된 특수기호를 안전하게 처리하므로 SQL 인젝션 해킹을 막아줍니다.
-          [변경 시] ${seq_counsel} (달러 기호)로 바꾸면, 값을 문자열 그대로 쿼리에 이어 붙이기 때문에 해킹 공격에 뚫릴 위험이 매우 높아집니다.
+            내부적으로 PreparedStatement를 사용하여 값에 포함된 특수기호를 안전하게 처리하므로 SQL 인젝션 해킹을 막아줍니다.
+            [변경 시] ${seq_counsel} (달러 기호)로 바꾸면, 값을 문자열 그대로 쿼리에 이어 붙이기 때문에 해킹 공격에 뚫릴 위험이 매우 높아집니다.
         -->
         SELECT * FROM COUNSEL_INFO WHERE seq_counsel = #{seq_counsel}
     </select>
 
     <insert id="insertCounsel" parameterType="com.crizen.task02.vo.CounselVO">
+        <!-- #{...}: CounselVO 객체에 담긴 데이터(제목, 작성자, 내용)를 안전하게 꺼내어 쿼리에 세팅합니다.
+            [참고] 글 번호(seq_counsel)는 테이블 생성 시 AUTO_INCREMENT 속성을 주었기 때문에 INSERT 문에서 생략하면 DB가 알아서 1씩 증가시켜 넣어줍니다.
+        -->
         INSERT INTO COUNSEL_INFO (counsel_title, counsel_writer, counsel_content, counsel_date)
         VALUES (#{counsel_title}, #{counsel_writer}, #{counsel_content}, NOW())
     </insert>
@@ -41,6 +44,9 @@
 
 
     <update id="updateCounsel" parameterType="com.crizen.task02.vo.CounselVO">
+        <!-- 요구사항에 맞춰 게시글의 제목과 내용뿐만 아니라 '수정자(modify_id)'와 '수정일시(modify_date)'도 함께 업데이트합니다.
+            수정일시는 NOW()를 사용해 쿼리가 실행되는 바로 그 시점의 시간으로 갱신됩니다.
+        -->
         UPDATE COUNSEL_INFO
         SET counsel_title = #{counsel_title},
             counsel_content = #{counsel_content},
@@ -50,17 +56,24 @@
     </update>
 
     <delete id="deleteCounsel" parameterType="int">
+        <!-- 파라미터로 넘어온 글 번호(seq_counsel)에 해당하는 행(Row)을 DB에서 완전히 지워버립니다.
+        -->
         DELETE FROM COUNSEL_INFO WHERE seq_counsel = #{seq_counsel}
     </delete>
 
     <select id="getCommentList" parameterType="int" resultType="com.crizen.task02.vo.CounselCommentVO">
         <!-- 특정 게시글(seq_counsel)에 달린 댓글들만 쏙 빼옵니다.
-          ORDER BY comment_date ASC: 댓글은 보통 먼저 쓴 사람(옛날 시간)이 맨 위에 보여야 하므로 오름차순(ASC)으로 정렬합니다.
+            ORDER BY comment_date ASC: 댓글은 보통 먼저 쓴 사람(옛날 시간)이 맨 위에 보여야 하므로 오름차순(ASC)으로 정렬합니다.
         -->
         SELECT * FROM COUNSEL_COMMENT WHERE seq_counsel = #{seq_counsel} ORDER BY comment_date ASC
     </select>
 
     <insert id="insertComment" parameterType="com.crizen.task02.vo.CounselCommentVO">
+        <!-- 메인 INSERT 쿼리가 실행되기 전(order="BEFORE")에 특정 값을 DB에서 미리 따와서 객체에 담아주는 매우 유용한 태그입니다.
+            SELECT NEXTVAL(seq_counsel_comment): MariaDB의 시퀀스를 호출해 다음 댓글 번호를 미리 발급받습니다.
+            keyProperty="seq_comment": 발급받은 번호를 파라미터로 넘어온 'CounselCommentVO'의 'seq_comment' 변수에 쏙 넣어줍니다.
+            [장점] 이렇게 하면 INSERT 실행 직후 Java 코드(Controller)에서 vo.getSeq_comment()를 꺼냈을 때, 방금 등록된 댓글의 번호를 즉시 알 수 있어 후속 처리(리다이렉트 등)에 매우 유리합니다.
+        -->
         <selectKey keyProperty="seq_comment" resultType="int" order="BEFORE">
             SELECT NEXTVAL(seq_counsel_comment)
         </selectKey>

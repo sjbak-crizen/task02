@@ -18,11 +18,15 @@ import java.util.List;
 // AuthenticationProvider: 사용자가 입력한 아이디/비번을 DB와 비교하여 실제 인증을 수행하는 핵심 검문소입니다.
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
+    // DB와 통신하여 로그인하려는 사용자 정보를 가져오기 위한 매퍼 객체입니다.
     @Autowired
     private UserMapper userMapper;
+
+    // 사용자가 입력한 '평문 비밀번호'와 DB에 저장된 '암호화된 비밀번호'를 안전하게 비교하기 위한 인코더입니다.
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+    // 실제 인증 로직이 담긴 메서드입니다. 사용자가 로그인 버튼을 누르면 스프링 시큐리티가 이 메서드를 자동으로 호출합니다.
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         // 1. 사용자가 입력한 아이디와 비밀번호를 꺼냅니다.
@@ -65,9 +69,13 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority(user.getRole()));
 
+        // 최종적으로 인증이 완료된 사용자 객체(user), 비밀번호, 부여된 권한을 담은 '토큰'을 만들어 스프링 시큐리티에 반환합니다.
+        // 이 반환값이 서버의 SecurityContext에 저장되어 비로소 '로그인 유지' 상태가 됩니다.
         return new UsernamePasswordAuthenticationToken(user, password, authorities);
     }
 
+    // 이 CustomAuthenticationProvider가 어떤 방식의 인증을 지원할지 스프링 시큐리티에 알려주는 메서드입니다.
+    // 여기서는 가장 일반적인 아이디/비밀번호 기반의 인증(UsernamePasswordAuthenticationToken) 방식을 처리한다고 명시합니다.
     @Override
     public boolean supports(Class<?> authentication) {
         return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);

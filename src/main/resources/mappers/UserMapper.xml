@@ -3,22 +3,34 @@
 <mapper namespace="com.crizen.task02.mapper.UserMapper">
 
     <select id="getUserById" resultType="com.crizen.task02.vo.UserVO">
+        <!-- Spring Security의 CustomAuthenticationProvider에서 사용자가 입력한 아이디가 실제로 DB에 존재하는지, 비밀번호나 잠금 상태는 어떤지 확인하기 위해 가장 먼저 호출하는 핵심 쿼리입니다.
+        -->
         SELECT * FROM USER_INFO WHERE user_id = #{user_id}
     </select>
 
     <update id="updateFailCount">
+        <!-- 로그인 실패 시 호출되며, DB 서버 내부 연산(fail_cnt = fail_cnt + 1)을 통해 카운트를 1 증가시킵니다.
+        -->
         UPDATE USER_INFO SET fail_cnt = fail_cnt + 1 WHERE user_id = #{user_id}
     </update>
 
     <update id="lockUser">
+        <!-- 비밀번호 실패 횟수가 5회에 도달했을 때(CustomLoginFailureHandler에서 판단) 호출되어, 사용자의 계정 상태를 잠금('Y')으로 즉시 변경합니다.
+            이후 이 사용자는 비밀번호를 맞게 치더라도 Provider의 검증 로직에 의해 로그인이 원천 차단됩니다.
+        -->
         UPDATE USER_INFO SET is_locked = 'Y' WHERE user_id = #{user_id}
     </update>
 
     <update id="resetFailCount">
+        <!-- 로그인에 성공했을 때(CustomLoginSuccessHandler에서 호출) 실행됩니다.
+            기존에 1~4번 실패했던 이력이 있더라도, 성공하는 순간 0으로 깔끔하게 리셋하여 나중에 계정이 잠기는 현상을 방지하는 무결성 쿼리입니다.
+        -->
         UPDATE USER_INFO SET fail_cnt = 0 WHERE user_id = #{user_id}
     </update>
 
     <insert id="insertUser" parameterType="com.crizen.task02.vo.UserVO">
+        <!-- 새로운 사용자를 DB에 등록합니다.
+        -->
         INSERT INTO USER_INFO (user_id, password, user_name, role, allowed_ip)
         VALUES (#{user_id}, #{password}, #{user_name}, #{role}, #{allowed_ip})
     </insert>

@@ -1,6 +1,5 @@
 package com.crizen.task02.controllers;
 
-// 필요한 객체(VO)와 인터페이스(Mapper), 스프링 어노테이션들을 불러옵니다.
 import com.crizen.task02.vo.CounselCommentVO;
 import com.crizen.task02.vo.CounselVO;
 import com.crizen.task02.mapper.CounselMapper;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-// @Controller: 스프링에게 이 클래스가 웹 요청을 처리하는 컨트롤러임을 알려줍니다. (지우면 404 에러 발생)
 @Controller
 // @RequestMapping: 이 컨트롤러의 모든 메서드는 기본적으로 "/counsel"로 시작하는 URL을 처리합니다.
 @RequestMapping("/counsel")

@@ -1,8 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
-<%--시큐리티 태그를 쓰겠다는 선언--%>
-<!DOCTYPE html>
+<%-- [시큐리티 태그라이브러리 선언]
+     Spring Security에서 제공하는 로그인 정보 확인, 권한별 화면 제어 기능을
+     JSP 태그 형태로 간편하게 사용하기 위해 선언합니다. --%><!DOCTYPE html>
 <html>
 <head>
     <title>글 보기</title>
@@ -21,6 +22,10 @@
         </div>
         <div class="card-footer text-right">
             <a href="delete?seq_counsel=${counsel.seq_counsel}" class="btn btn-danger btn-sm">삭제</a>
+            <%-- [삭제 로직의 흐름]
+                삭제 버튼 클릭 시 해당 글 번호(seq_counsel)를 파라미터로 넘깁니다.
+                컨트롤러에서는 이 번호를 받아 '본인 글인지' 혹은 '관리자인지' 체크 후 DB에서 삭제 처리를 수행합니다. --%>
+
             <a href="list" class="btn btn-secondary btn-sm">목록</a>
         </div>
     </div>
@@ -28,6 +33,9 @@
     <h4>댓글</h4>
     <div class="list-group mb-3">
         <c:forEach items="${comments}" var="comment">
+            <%-- [댓글 리스트 출력]
+                하나의 게시글(counsel)에 달린 여러 개의 댓글 목록(List<CommentVO>)을
+                순차적으로 돌면서 화면에 리스트 형식으로 뿌려줍니다. --%>
             <div class="list-group-item">
                 <b>${comment.comment_writer}</b> <span class="text-muted" style="font-size:0.8em">${comment.comment_date}</span>
                 <p class="mb-0">${comment.comment_content}</p>
@@ -37,10 +45,17 @@
 
     <form action="comment/write" method="post" class="border p-3 bg-light">
         <input type="hidden" name="seq_counsel" value="${counsel.seq_counsel}">
+        <%-- [Hidden 파라미터 활용]
+            댓글은 반드시 특정 게시글에 종속되어야 합니다. 사용자에게 보여줄 필요는 없지만
+            서버에 데이터를 보낼 때 '어떤 글에 달리는 댓글인지' 부모 글 번호를 숨겨서 같이 보냅니다. --%>
         <div class="form-row">
             <div class="col-md-2">
                 <input type="text" name="comment_writer" class="form-control"
                        value="<sec:authentication property='principal.user_name'/>" readonly>
+                <%-- [시큐리티 세션 정보 추출]
+                    <sec:authentication>: 현재 로그인한 사용자의 정보를 가져옵니다.
+                    principal.user_name: CustomAuthenticationProvider에서 저장한 유저의 이름을 가져와
+                    자동으로 입력하고, readonly를 통해 수정하지 못하게 막아 데이터 위변조를 방지합니다. --%>
             </div>
             <div class="col-md-9">
                 <input type="text" name="comment_content" class="form-control" placeholder="댓글을 입력하세요" required>
@@ -50,9 +65,9 @@
             </div>
         </div>
     </form>
-<%--    사용자가 댓글 작성자 이름과 내용을 입력하고 '등록'을 누르는 영역입니다.
-    <form method="post">: 데이터가 주소창에 노출되지 않도록 안전한 POST 방식을 씁니다.
-    <input type="hidden">: 부모 글의 PK 번호를 몰래 숨겨서 같이 제출하는 코드입니다.--%>
+    <%--    [댓글 전송 영역]
+            사용자가 댓글 작성자 이름과 내용을 입력하고 '등록'을 누르는 영역입니다.
+            method="post": 댓글 내용은 길이가 길 수 있고 보안이 중요하므로 POST 방식을 사용합니다. --%>
 </div>
 </body>
 </html>

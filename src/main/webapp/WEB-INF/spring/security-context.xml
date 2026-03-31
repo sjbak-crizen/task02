@@ -8,6 +8,8 @@
                            http://www.springframework.org/schema/security/spring-security.xsd">
 
     <security:http pattern="/resources/**" security="none" />
+    <!-- CSS, JS, 이미지, Bootstrap 등 정적 파일들이 모여있는 폴더(/resources/**)는 시큐리티의 인증(검문)을 받지 않고 프리패스(none) 하도록 예외 처리하는 설정입니다.
+    -->
 
     <security:http auto-config="true" use-expressions="true">
 
@@ -15,6 +17,10 @@
         <security:intercept-url pattern="/user/register**" access="permitAll" />
         <security:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
         <security:intercept-url pattern="/**" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')" />
+        <!-- 요청되는 URL 주소별로 접근 권한(문지기 역할)을 세밀하게 통제합니다. 코드는 위에서부터 아래로 순서대로 적용되므로 좁고 디테일한 범위를 위에, 포괄적인 범위(/)를 맨 아래에 두어야 합니다. (permitAll: 모두 허용, hasRole: 특정 권한 허용)
+            [변경/삭제 시]: /login 의 access를 permitAll에서 hasRole('ROLE_USER')로 바꾸면, 로그인하러 온 사용자가 로그인 화면조차 들어가지 못해 무한 루프나 403 에러가 발생합니다.
+                         이 구역을 지우면 보안 규칙이 뚫려서 아무나 관리자 페이지에 들어갈 수 있습니다.
+        -->
 
         <security:form-login
                 login-page="/login"
@@ -23,12 +29,16 @@
                 password-parameter="password"
                 authentication-success-handler-ref="customLoginSuccessHandler"
                 authentication-failure-handler-ref="customLoginFailureHandler" />
+        <!-- 폼 로그인 방식의 동작을 정의합니다. 로그인 화면 경로(/login), 폼 전송 주소(/loginProcess), 화면의 input name값, 그리고 성공/실패 시 어떤 클래스(Handler)가 후처리를 담당할지 엮어줍니다.
+        -->
 
         <security:logout
                 logout-url="/logout"
                 logout-success-url="/login?logout=true"
                 invalidate-session="true" />
-
+        <!-- 로그아웃 요청 주소와 로그아웃 완료 후 돌아갈 화면을 설정합니다. invalidate-session="true"는 로그아웃 시 서버에 남은 사용자의 세션(비밀번호, 권한 등) 정보를 완전히 파기해 보안을 챙기는 옵션입니다.
+            [변경/삭제 시]: invalidate-session을 false로 변경하거나 지우면, 겉으로는 로그아웃된 것 같아도 세션이 살아있어 브라우저 '뒤로가기'를 누르면 다시 로그인된 화면으로 들어가지게 되는 치명적인 버그가 발생합니다.
+        -->
     </security:http>
 
     <bean id="customAuthenticationProvider" class="com.crizen.task02.security.CustomAuthenticationProvider" />
@@ -36,11 +46,15 @@
         <property name="defaultTargetUrl" value="/counsel/list" />
     </bean>
     <bean id="customLoginFailureHandler" class="com.crizen.task02.security.CustomLoginFailureHandler" />
-
     <bean id="bcryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+    <!-- Java 코드로 만든 커스텀 Provider와 로그인 성공/실패 후처리 담당자(Handler), 그리고 비밀번호 암호화 도구(BCrypt)를 스프링 메모리에 '빈(Bean)'으로 올려 대기시키는 과정입니다.
+    -->
 
     <security:authentication-manager>
         <security:authentication-provider ref="customAuthenticationProvider" />
     </security:authentication-manager>
+    <!-- 로그인 요청이 들어오면 기본 방식 말고, customAuthenticationProvider가 검증합니다.
+        [변경/삭제 시]: 이 부분이 없으면 '5회 실패 시 잠금', '허용 IP 체크' 같은 커스텀 로직을 무시해 버립니다.
+    -->
 
 </beans>
