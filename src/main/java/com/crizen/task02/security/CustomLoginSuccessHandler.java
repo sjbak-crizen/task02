@@ -14,7 +14,7 @@ import java.io.IOException;
 // 로그인 성공 시 자동으로 호출되는 클래스입니다.
 // 단순한 SuccessHandler가 아니라 'SavedRequestAware(저장된 요청을 기억하는)' 핸들러를 상속받았습니다.
 // 사용자가 로그인이 필요한 페이지(예: /counsel/write)에 접속하려다 로그인 창으로 튕겼을 때,
-// 로그인 성공 후 원래 가려던 그 페이지(/counsel/write)로 똑똑하게 돌려보내주는 강력한 부모 클래스입니다.
+// 로그인 성공 후 원래 가려던 그 페이지(/counsel/write)로 돌려보내주는 강력한 부모 클래스입니다.
 public class CustomLoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
     // 로그인에 성공했으니, DB에 기록된 '실패 횟수'를 0으로 만들어주기 위해 Mapper를 주입받습니다.
@@ -30,8 +30,7 @@ public class CustomLoginSuccessHandler extends SavedRequestAwareAuthenticationSu
         // Object 타입으로 리턴되므로 (UserVO)로 형변환(캐스팅)하여 꺼냅니다.
         UserVO user = (UserVO) authentication.getPrincipal();
 
-        // 사용자가 이전에 비밀번호를 1~4번 틀렸더라도, 이번에 성공했으므로 과거의 실수를 용서하고 0으로 초기화(Reset)합니다.
-        // 이 로직이 없으면 성공적으로 로그인을 했음에도 나중에 한 번만 틀려도 5회가 누적되어 계정이 잠겨버리는 억울한 버그가 발생합니다.
+        // 사용자가 이전에 비밀번호를 1~4번 틀렸더라도, 이번에 성공했으므로 0으로 초기화(Reset)합니다.
         userMapper.resetFailCount(user.getUser_id());
 
         // 부모 클래스의 메서드를 호출하여 원래 가려던 페이지(또는 기본 리스트 화면)로 이동시킵니다.

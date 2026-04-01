@@ -21,10 +21,16 @@
             ${counsel.counsel_content}
         </div>
         <div class="card-footer text-right">
-            <a href="delete?seq_counsel=${counsel.seq_counsel}" class="btn btn-danger btn-sm">삭제</a>
-            <%-- [삭제 로직의 흐름]
-                삭제 버튼 클릭 시 해당 글 번호(seq_counsel)를 파라미터로 넘깁니다.
-                컨트롤러에서는 이 번호를 받아 '본인 글인지' 혹은 '관리자인지' 체크 후 DB에서 삭제 처리를 수행합니다. --%>
+            <%-- [수정/삭제 권한 제어]
+                 현재 로그인한 유저의 ID와 Role을 변수에 담습니다. --%>
+            <sec:authentication property="principal.user_id" var="loginUserId" />
+            <sec:authentication property="principal.role" var="loginUserRole" />
+
+            <%-- 작성자 본인이거나, 관리자(ROLE_ADMIN)일 경우에만 수정/삭제 버튼 노출 --%>
+            <c:if test="${loginUserId eq counsel.counsel_writer or loginUserRole eq 'ROLE_ADMIN'}">
+                <a href="update?seq_counsel=${counsel.seq_counsel}" class="btn btn-warning btn-sm">수정</a>
+                <a href="delete?seq_counsel=${counsel.seq_counsel}" class="btn btn-danger btn-sm">삭제</a>
+            </c:if>
 
             <a href="list" class="btn btn-secondary btn-sm">목록</a>
         </div>
@@ -51,11 +57,10 @@
         <div class="form-row">
             <div class="col-md-2">
                 <input type="text" name="comment_writer" class="form-control"
-                       value="<sec:authentication property='principal.user_name'/>" readonly>
+                       value="<sec:authentication property='principal.user_id'/>" readonly>
                 <%-- [시큐리티 세션 정보 추출]
                     <sec:authentication>: 현재 로그인한 사용자의 정보를 가져옵니다.
-                    principal.user_name: CustomAuthenticationProvider에서 저장한 유저의 이름을 가져와
-                    자동으로 입력하고, readonly를 통해 수정하지 못하게 막아 데이터 위변조를 방지합니다. --%>
+                    principal.user_id: CustomAuthenticationProvider에서 저장한 유저의 '고유 아이디(ID)'를 가져옵니다.--%>
             </div>
             <div class="col-md-9">
                 <input type="text" name="comment_content" class="form-control" placeholder="댓글을 입력하세요" required>

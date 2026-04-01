@@ -29,24 +29,24 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     // 실제 인증 로직이 담긴 메서드입니다. 사용자가 로그인 버튼을 누르면 스프링 시큐리티가 이 메서드를 자동으로 호출합니다.
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        // 1. 사용자가 입력한 아이디와 비밀번호를 꺼냅니다.
+        // 사용자가 입력한 아이디와 비밀번호를 꺼냅니다.
         String userId = authentication.getName();
         String password = (String) authentication.getCredentials();
 
-        // 2. DB에서 유저 정보를 조회합니다.
+        // DB에서 유저 정보를 조회합니다.
         UserVO user = userMapper.getUserById(userId);
 
-        // 3. 아이디 검증
+        // 아이디 검증
         if (user == null) {
             throw new UsernameNotFoundException("존재하지 않는 아이디입니다.");
         }
 
-        // 4. 계정 잠금 여부 검증 (5회 틀렸는지)
+        // 계정 잠금 여부 검증 (5회 틀렸는지)
         if ("Y".equals(user.getIs_locked())) {
             throw new LockedException("비밀번호 5회 오류로 계정이 잠겼습니다.");
         }
 
-        // 5. 허용 IP 검증 (요구사항)
+        // 허용 IP 검증 (요구사항)
         // WebAuthenticationDetails 객체를 통해 접속자의 실제 IP를 추출합니다.
         WebAuthenticationDetails details = (WebAuthenticationDetails) authentication.getDetails();
         String remoteIp = details.getRemoteAddress();
@@ -59,13 +59,13 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             }
         }
 
-        // 6. 비밀번호 검증 (BCrypt 암호화 비교)
+        // 비밀번호 검증 (BCrypt 암호화 비교)
         // passwordEncoder.matches(평문, 암호화된문자열)를 사용하여 비교합니다.
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
         }
 
-        // 7. 모든 검증 통과! 권한(Role)을 부여하고 인증 성공 토큰을 발급합니다.
+        // 모든 검증 통과! 권한(Role)을 부여하고 인증 성공 토큰을 발급합니다.
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority(user.getRole()));
 

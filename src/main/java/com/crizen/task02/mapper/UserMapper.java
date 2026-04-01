@@ -17,4 +17,7 @@ public interface UserMapper {
 
     // 5. 회원가입
     void insertUser(UserVO vo);
+
+    // 6. 비밀번호 변경 (VO에 새 비밀번호를 담아서 넘깁니다)
+    void updatePassword(UserVO vo);
 }

@@ -50,7 +50,7 @@ public class CounselController {
     // 폼에서 전송버튼을 누르면 POST 방식으로 데이터가 넘어옵니다. 파라미터로 선언된 CounselVO에 폼 데이터가 자동으로 담깁니다.
     @RequestMapping(value = "/write", method = RequestMethod.POST)
     public String writeAction(CounselVO vo) {
-        // [요구사항] 화면에서 누가 입력하든, 실제 로그인한 사람의 ID로 덮어씌움!
+        // 화면에서 누가 입력하든, 실제 로그인한 사람의 ID로 덮어씌움
         vo.setCounsel_writer(getLoginUser().getUser_id());
 
         // Mapper를 호출해 DB에 글을 저장합니다.
@@ -63,7 +63,7 @@ public class CounselController {
 
     // 4. 상세 화면 (게시글 정보 + 댓글 목록 동시에 조회)
     @RequestMapping(value = "/view", method = RequestMethod.GET)
-    // @RequestParam("seq_counsel"): URL에 있는 ?seq_counsel=1 값을 int형 seq_counsel 변수에 쏙 넣어줍니다. (파라미터 이름이 다르면 에러 발생)
+    // @RequestParam("seq_counsel"): URL에 있는 ?seq_counsel=1 값을 int형 seq_counsel 변수에 넣어줍니다.
     public String view(@RequestParam("seq_counsel") int seq_counsel, Model model) {
         // 1. 선택한 번호에 해당하는 게시글 상세 정보를 가져와 "counsel"이라는 이름으로 담습니다.
         model.addAttribute("counsel", counselMapper.getCounsel(seq_counsel));
@@ -72,14 +72,36 @@ public class CounselController {
         return "counsel/view"; // counsel/view.jsp 화면 출력
     }
 
-    // 5. 글 수정 처리
+    // 5. 글 수정 화면 띄우기 (본인 또는 관리자만 접근 가능)
+    @RequestMapping(value = "/update", method = RequestMethod.GET)
+    public String updateForm(@RequestParam("seq_counsel") int seq_counsel, Model model, RedirectAttributes rttr) {
+        UserVO loginUser = getLoginUser();
+        CounselVO counsel = counselMapper.getCounsel(seq_counsel);
+
+        // 관리자이거나, 글 작성자인지 확인
+        boolean isAdmin = "ROLE_ADMIN".equals(loginUser.getRole());
+        boolean isAuthor = counsel.getCounsel_writer().equals(loginUser.getUser_id());
+
+        // 권한이 없으면 수정 화면 진입 차단 및 에러 메시지 전송
+        if (!isAdmin && !isAuthor) {
+            rttr.addFlashAttribute("errorMessage", "자신이 등록한 게시물만 수정할 수 있습니다!");
+            return "redirect:/counsel/view?seq_counsel=" + seq_counsel;
+        }
+
+        // 권한이 있다면 수정 화면에 기존 데이터를 뿌려주기 위해 Model에 담음
+        model.addAttribute("counsel", counsel);
+        return "counsel/update";
+    }
+
+    // 5-1. DB 수정 처리
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public String updateAction(CounselVO vo) {
         // [요구사항] 변경 시 로그인한 사람을 수정자(modify_id)로 등록
         vo.setModify_id(getLoginUser().getUser_id());
 
         counselMapper.updateCounsel(vo); // DB 수정
-        // 수정한 뒤에는 방금 수정한 그 글로 다시 돌아가야 하므로, vo.getSeq_counsel()로 원래 번호를 붙여서 리다이렉트합니다.
+
+        // 수정한 뒤에는 방금 수정한 그 글로 다시 돌아가기
         return "redirect:/counsel/view?seq_counsel=" + vo.getSeq_counsel();
     }
 
@@ -89,11 +111,11 @@ public class CounselController {
         UserVO loginUser = getLoginUser();
         CounselVO targetPost = counselMapper.getCounsel(seq_counsel);
 
-        // [요구사항] 관리자(ROLE_ADMIN)이거나, 글 작성자(counsel_writer)가 로그인한 유저와 같은지 확인
+        // 관리자(ROLE_ADMIN)이거나, 글 작성자(counsel_writer)가 로그인한 유저와 같은지 확인
         boolean isAdmin = "ROLE_ADMIN".equals(loginUser.getRole());
         boolean isAuthor = targetPost.getCounsel_writer().equals(loginUser.getUser_id());
 
-        // 일반 사용자인데 본인 글이 아니라면? (삭제 거부!)
+        // 일반 사용자인데 본인 글이 아니라면? (삭제 거부)
         if (!isAdmin && !isAuthor) {
             // rttr을 쓰면 리다이렉트 후에도 화면에 에러 메시지를 딱 1번 전달할 수 있습니다.
             rttr.addFlashAttribute("errorMessage", "자신이 등록한 게시물만 삭제할 수 있습니다!");
@@ -101,8 +123,8 @@ public class CounselController {
         }
 
         // 검증 통과 시 삭제 실행
-        counselMapper.deleteCounsel(seq_counsel); // DB 삭제
-        return "redirect:/counsel/list"; // 삭제했으니 다시 목록 화면으로!
+        counselMapper.deleteCounsel(seq_counsel);
+        return "redirect:/counsel/list"; // 삭제했으니 다시 목록 화면으로
     }
 
     // 7. 댓글 작성 처리

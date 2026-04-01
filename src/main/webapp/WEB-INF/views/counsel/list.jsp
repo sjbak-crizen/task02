@@ -3,6 +3,7 @@
 <%-- [JSTL 선언]
      JSP 파일 안에 복잡한 자바 코드(<% for(...) %>)를 쓰면 화면(View) 코드가 지저분해집니다.
      이를 방지하고 HTML 태그처럼 깔끔하게 반복문/조건문을 사용하기 위해 JSTL(표준 태그 라이브러리)을 끌어온 것입니다. --%>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 
 <!DOCTYPE html>
 <html>
@@ -16,10 +17,30 @@
 <div class="container mt-5">
 <%--    mt-5: 위쪽 여백 5단계--%>
     <h2>상담 게시판</h2>
-    <div class="text-right mb-2">
-        <a href="write" class="btn btn-primary">글쓰기</a>
-<%--        btn-primary: 파란색 메인 버튼--%>
+    <%-- ========================================================= --%>
+    <%-- 상단 우측 메뉴 (인사말 + 비번변경 + 로그아웃 + 글쓰기) --%>
+    <%-- ========================================================= --%>
+    <div class="text-right mb-3 align-items-center">
+        <%-- 1. 사용자 이름 표시 --%>
+        <span class="mr-3 text-secondary">
+            <b><sec:authentication property="principal.user_name"/></b>님 환영합니다!
+        </span>
+
+        <%-- 2. 비밀번호 변경 버튼 --%>
+        <a href="${pageContext.request.contextPath}/user/changePassword" class="btn btn-outline-secondary btn-sm">비밀번호 변경</a>
+
+        <%-- 3. 로그아웃 폼 (POST 방식 전송) --%>
+        <form action="${pageContext.request.contextPath}/logout" method="post" style="display: inline-block; margin-right: 10px;">
+            <button type="submit" class="btn btn-outline-danger btn-sm">로그아웃</button>
+        </form>
+
+        <%-- 4. 글쓰기 버튼 --%>
+        <a href="write" class="btn btn-primary btn-sm">글쓰기</a>
+            <%-- btn-primary: 파란색 메인 버튼--%>
     </div>
+    <%-- ========================================================= --%>
+
+
 
     <form action="list" method="get" class="d-flex mb-3 bg-light p-3 border rounded align-items-center">
         <%-- [검색에 GET 방식을 쓴 이유]

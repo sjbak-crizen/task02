@@ -23,7 +23,7 @@
 
     <update id="resetFailCount">
         <!-- 로그인에 성공했을 때(CustomLoginSuccessHandler에서 호출) 실행됩니다.
-            기존에 1~4번 실패했던 이력이 있더라도, 성공하는 순간 0으로 깔끔하게 리셋하여 나중에 계정이 잠기는 현상을 방지하는 무결성 쿼리입니다.
+            기존에 1~4번 실패했던 이력이 있더라도, 성공하는 순간 0으로 리셋하여 나중에 계정이 잠기는 현상을 방지하는 쿼리입니다.
         -->
         UPDATE USER_INFO SET fail_cnt = 0 WHERE user_id = #{user_id}
     </update>
@@ -35,4 +35,9 @@
         VALUES (#{user_id}, #{password}, #{user_name}, #{role}, #{allowed_ip})
     </insert>
 
+    <update id="updatePassword" parameterType="com.crizen.task02.vo.UserVO">
+        UPDATE USER_INFO
+        SET password = #{password}
+        WHERE user_id = #{user_id}
+    </update>
 </mapper>
