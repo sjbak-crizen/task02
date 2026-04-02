@@ -51,6 +51,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         WebAuthenticationDetails details = (WebAuthenticationDetails) authentication.getDetails();
         String remoteIp = details.getRemoteAddress();
 
+        // System.out.println(remoteIp);     // IP 테스트
+
         if (user.getAllowed_ip() != null && !user.getAllowed_ip().isEmpty()) {
             // 로컬 테스트 시 IPv6(0:0:0:0:0:0:0:1)로 잡히는 것을 IPv4(127.0.0.1)로 보정
             String checkIp = remoteIp.equals("0:0:0:0:0:0:0:1") ? "127.0.0.1" : remoteIp;

@@ -38,19 +38,17 @@ public class CustomLoginFailureHandler extends SimpleUrlAuthenticationFailureHan
         // "존재하지 않는 아이디입니다" 같은 에러일 때는 허공에 카운트를 올릴 수 없으므로 걸러내는 방어 로직입니다.
         if (user != null && exception instanceof BadCredentialsException) {
 
-            // 이미 잠긴 계정("Y")이라면 더 이상 카운트를 올리거나 계산할 필요가 없으므로 "N"일 때만 로직을 탑니다.
-            if (!"Y".equals(user.getIs_locked())) {
-                userMapper.updateFailCount(userId); // DB 카운트 +1
-                UserVO updatedUser = userMapper.getUserById(userId); // 업데이트된 정보 다시 조회
+            userMapper.updateFailCount(userId); // DB 카운트 +1
+            UserVO updatedUser = userMapper.getUserById(userId); // 업데이트된 정보 다시 조회
 
-                // 5회 이상 틀렸으면 계정 잠금 처리
-                if (updatedUser.getFail_cnt() >= 5) {
-                    userMapper.lockUser(userId);
-                    errorMessage = "비밀번호 5회 오류로 계정이 잠겼습니다. 관리자에게 문의하세요.";
-                } else {
-                    errorMessage = "비밀번호가 틀렸습니다. (남은 횟수: " + (5 - updatedUser.getFail_cnt()) + "회)";
-                }
+            // 5회 이상 틀렸으면 계정 잠금 처리
+            if (updatedUser.getFail_cnt() >= 5) {
+                userMapper.lockUser(userId);
+                errorMessage = "비밀번호 5회 오류로 계정이 잠겼습니다. 관리자에게 문의하세요.";
+            } else {
+                errorMessage = "비밀번호가 틀렸습니다. (남은 횟수: " + (5 - updatedUser.getFail_cnt()) + "회)";
             }
+
         }
 
         // 화면에 에러 메시지를 띄워주기 위해 request에 담아서 로그인 페이지로 돌려보냅니다.

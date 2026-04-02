@@ -89,10 +89,6 @@
         UPDATE COUNSEL_INFO
         SET counsel_content = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
         counsel_content, '건성', '*****'), '찌질', '*****'), '말투', '*****'), '뻔뻔', '*****'), '싸가지', '*****')
-        <!-- WHERE ... LIKE '%단어%': 게시글 내용 중 해당 욕설이 '포함된' 글만 찾습니다.
-          [변경 시] LIKE 대신 '=' 기호를 쓰면, 내용이 딱 "건성" 두 글자인 게시물만 찾기 때문에 실질적으로 작동하지 않습니다.
-          [삭제 시] WHERE 절을 지워버리면, 욕설이 없는 멀쩡한 게시글 10만 개도 전부 UPDATE 대상이 되어 불필요하게 DB 성능을 갉아먹습니다.
-        -->
         WHERE counsel_content LIKE '%건성%' OR counsel_content LIKE '%찌질%' OR counsel_content LIKE '%말투%'
            OR counsel_content LIKE '%뻔뻔%' OR counsel_content LIKE '%싸가지%'
     </update>
